@@ -1,21 +1,19 @@
 {
-  "name": "apideneme",
+  "name": "express-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Basit Express.js API",
+  "main": "app.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "dependencies": {
-    "expo": "~53.0.20",
-    "expo-status-bar": "~2.2.3",
-    "react": "19.0.0",
-    "react-native": "0.79.5"
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.4",
+    "multer": "^2.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
-  },
-  "private": true
+    "nodemon": "^3.0.2"
+  }
 }
