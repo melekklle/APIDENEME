@@ -12,7 +12,7 @@ description:{
 },
 icon: {
     type:String,
-    require:true
+    require:false
 },
 status: {
     type:String,
