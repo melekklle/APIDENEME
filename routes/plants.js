@@ -10,28 +10,67 @@ const Plants = require('../models/Plants');
 // Multer konfigürasyonunu import ediyoruz - dosya upload için
 const upload = require('../config/multer');
 
+// Advanced Query Builder utility'sini import ediyoruz
+// Sort, Filter, Pagination özellikleri için
+const queryBuilder = require('../utils/queryBuilder');
+
 // ===== PLANT CRUD İŞLEMLERİ (Create, Read, Update, Delete) =====
 
 // 1. READ - Tüm bitkileri getir (GET /api/plants)
 // HTTP GET method: Veri okuma işlemleri için kullanılır
+// ADVANCED: Sort, Filter, Pagination desteği
+// 
+// Örnek kullanımlar:
+// GET /api/plants?sort=name                    - İsme göre A-Z sırala
+// GET /api/plants?sort=-createdAt              - En yeni önce
+// GET /api/plants?filter[status]=active        - Sadece aktif bitkiler
+// GET /api/plants?filter[name]=gül,papatya    - İsmi gül veya papatya olanlar
+// GET /api/plants?search=yeşil                 - Tüm alanlarda 'yeşil' ara
+// GET /api/plants?page=2&limit=5              - 2. sayfa, 5 kayıt
+// GET /api/plants?date_from=2024-01-01        - Belirli tarihten sonra
 router.get('/', async (req, res) => {
     try {
-        // Plants.find(): Tüm bitkileri getirir (SQL'deki SELECT * FROM plants gibi)
-        // await: Asynchronous işlemin tamamlanmasını bekler
-        const plants = await Plants.find();
+        // Advanced Query Builder kullanıyoruz
+        // Professional response format ile
+        const result = await queryBuilder(Plants, req, {
+            // Query Builder konfigürasyonu
+            defaultLimit: 5,           // Varsayılan sayfa boyutu
+            maxLimit: 50,              // Maksimum sayfa boyutu
+            defaultSort: 'createdAt',   // Varsayılan sıralama field'ı
+            
+            // Güvenlik: Hangi field'larda sıralama yapılabilir
+            allowedSortFields: ['name', 'status', 'createdAt', 'updatedAt'],
+            
+            // Güvenlik: Hangi field'larda filtreleme yapılabilir
+            allowedFilterFields: ['name', 'description', 'status'],
+            
+            // İsterseniz tüm field'lara izin vermek için: allowedFilterFields: []
+            
+            // Global search: Hangi field'larda arama yapılabilir
+            searchFields: ['name', 'description'],
+            
+            // Date filtering için hangi field kullanılacak
+            dateField: 'createdAt'
+        });
         
-        // Image URL'lerini ekleyerek response hazırlıyoruz
-        const plantsWithImageUrls = plants.map(plant => ({
+        // Image URL'lerini data'ya ekliyoruz
+        const dataWithImageUrls = result.data.map(plant => ({
             ...plant.toObject(),
             // Her bitki için tam image URL'ini ekliyoruz
             imageUrl: `${req.protocol}://${req.get('host')}/images/${plant.image}`
         }));
         
+        // Professional response format
+        // data field'ını güncellenmiş verilerle değiştiriyoruz
+        const response = {
+            ...result,
+            data: dataWithImageUrls,
+            success: true
+        };
+        
         // HTTP 200 (OK) status code ile başarılı response
-        res.json({
-            success: true,      // İşlem durumu
-            data: plantsWithImageUrls  // Image URL'leri ile birlikte bitki verileri
-        });
+        res.json(response);
+        
     } catch (error) {
         // Hata durumunda HTTP 500 (Internal Server Error)
         // try-catch: Hata yakalama ve yönetimi

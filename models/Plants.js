@@ -29,6 +29,11 @@ const plantSchema = new mongoose.Schema({
         enum: ['active', 'inactive'],    // Enum validation: Sadece bu 2 değer kabul edilir
         default: 'active'                // Varsayılan değer: Yeni bitkiler aktif olur
     },
+    // categotyId: {
+    //     type:mongoose.Schema.type.ObjectId,
+    //     ref:'Category',
+    //     require:true
+    // },
 }, {
     // Schema configuration (yapılandırma) seçenekleri
     timestamps: true    // Otomatik zaman damgaları ekler:
