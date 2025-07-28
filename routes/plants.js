@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Plant model'ini import ediyoruz - database işlemleri için
 const Plants = require('../models/Plants');
-
+const Category = require('../models/Category');
 // Multer konfigürasyonunu import ediyoruz - dosya upload için
 const upload = require('../config/multer');
 
@@ -30,6 +30,26 @@ const queryBuilder = require('../utils/queryBuilder');
 // GET /api/plants?date_from=2024-01-01        - Belirli tarihten sonra
 router.get('/', async (req, res) => {
     try {
+            // Eğer req.query.filter yoksa boş bir nesne yap
+    const filter = req.query.filter || {};
+
+    // Eğer filter.category varsa, kategori ismine göre ID bul
+    if (filter.category) {
+      const foundCategory = await Category.findOne({ name: filter.category });
+      if (foundCategory) {
+        filter.category = foundCategory._id.toString();
+      } else {
+        return res.json({
+          success: true,
+          data: [],
+          total: 0,
+          message: 'Kategori bulunamadı'
+        });
+      }
+    }
+
+    // Güncellenmiş filtreyi tekrar query içine koy
+    req.query.filter = filter;
         // Advanced Query Builder kullanıyoruz
         // Professional response format ile
         const result = await queryBuilder(Plants, req, {
@@ -42,7 +62,7 @@ router.get('/', async (req, res) => {
             allowedSortFields: ['name', 'status', 'createdAt', 'updatedAt'],
             
             // Güvenlik: Hangi field'larda filtreleme yapılabilir
-            allowedFilterFields: ['name', 'description', 'status'],
+            allowedFilterFields: ['name', 'description', 'status','category'],
             
             // İsterseniz tüm field'lara izin vermek için: allowedFilterFields: []
             
@@ -80,7 +100,33 @@ router.get('/', async (req, res) => {
         });
     }
 });
+router.get('/with-category', async (req, res) => {
+  try {
+    const plants = await Plants.find()
+      .populate('category');
 
+    const plantsWithImages = plants.map(plant => ({
+      ...plant.toObject(),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${plant.image}`,
+      category: plant.category
+        ? {
+            ...plant.category.toObject(),
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${plant.category.image}`
+          }
+        : null
+    }));
+
+    res.json({
+      success: true,
+      data: plantsWithImages
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 // 2. READ - Tek bitki getir (GET /api/plants/:id)
 // URL Parameters: :id dinamik parametre (örn: /api/plants/123)
 router.get('/:id', async (req, res) => {
@@ -140,7 +186,8 @@ router.post('/', upload.single('image'), async (req, res) => {
             // Upload edilen dosyanın sadece filename'ini kaydediyoruz
             // Full path: public/images/filename.jpg
             // Database'de: filename.jpg (public/images prefix'i otomatik eklenir)
-            image: req.file.filename
+            image: req.file.filename,
+            category:req.body.category
         };
         
         // new Plants(): Yeni bitki instance'ı oluştur
@@ -312,6 +359,7 @@ router.delete('/:id', async (req, res) => {
         });
     }
 });
+
 
 // Router'ı export ediyoruz
 // Bu sayede routes/index.js'de import edilebilir

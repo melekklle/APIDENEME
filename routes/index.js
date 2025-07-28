@@ -10,13 +10,13 @@ const router = express.Router();
 // Her resource (kullanıcı, bitki vb.) için ayrı route dosyaları
 const userRoutes = require('./users');    // User CRUD işlemleri
 const plantRoutes = require('./plants');  // Plant CRUD işlemleri
-const categoryRoutes = require('./category');
+const categoryRoutes = require('./category'); // Category Crud işlemleri
 // Route tanımlamaları (Route Definitions)
 // router.use(): Middleware ve sub-router'ları mount etmek için kullanılır
 // '/users' path'i için userRoutes modülünü kullan
 router.use('/users', userRoutes);   // /api/users/* endpoint'leri
 router.use('/plants', plantRoutes); // /api/plants/* endpoint'leri
-router.use('/category',categoryRoutes);
+router.use('/category',categoryRoutes);// /api/category/* endpoint'leri
 // API ana sayfası (Root endpoint)
 // GET /api - API hakkında genel bilgi verir
 router.get('/', (req, res) => {
@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
         endpoints: {
             users: '/api/users',      // Kullanıcı işlemleri
             plants: '/api/plants',    // Bitki işlemleri
-            category:'/api/category',
+            category:'/api/category', // Kategori işlemleri
         }
     });
 });

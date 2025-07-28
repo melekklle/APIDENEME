@@ -5,6 +5,7 @@ const Category = require('../models/Category');
 const queryBuilder = require('../utils/queryBuilder');
 const fs = require('fs');
 const path = require('path');
+const Plant= require('../models/Plants');
 
 router.get('/', async (req, res) => {
   try {
@@ -62,7 +63,29 @@ router.get('/:id', async (req, res) => {
     });
   }
 });
-
+router.get('/:id/plants', async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kategori Bulunamadı'
+      });
+    }
+    res.json({
+      success: true,
+      data: {
+        ...category.toObject(),
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${category.image}`
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 
 router.post('/', upload.single('icon'), async (req, res) => {
   try {
@@ -197,5 +220,35 @@ router.delete('/:id', async (req, res) => {
     });
   }
 });
-
+router.get('/:id/plants',async(req,res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if(!category) {
+      return res.status(404).json({
+        success:false,
+        message:'Kategori Bulunamadı'
+      });
+    }
+    const plants = await Plant.find({category:req.params.id});
+    const plantWithImage = plants.map(plant => ({
+      ...plant.toObject(),
+      imageUrl:`${req.protocol}://${req.get('host')}/images/${plant.image}`
+    }));
+    res.json({
+      success:true,
+      data: {
+        category: {
+          ...category.toObject(),
+          imageUrl:`${req.protocol}://${req.res('host')}/image/${category.image}`
+        },
+        plants:plantWithImage
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+  }
+});
 module.exports = router;
