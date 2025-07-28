@@ -22,7 +22,9 @@ const queryBuilder = require('../utils/queryBuilder');
 // 
 // Örnek kullanımlar:
 // GET /api/plants?sort=name                    - İsme göre A-Z sırala
-// GET /api/plants?sort=-createdAt              - En yeni önce
+// GET /api/plants?sort=-createdA
+// haberler/erdoğaj
+// /              - En yeni önce
 // GET /api/plants?filter[status]=active        - Sadece aktif bitkiler
 // GET /api/plants?filter[name]=gül,papatya    - İsmi gül veya papatya olanlar
 // GET /api/plants?search=yeşil                 - Tüm alanlarda 'yeşil' ara
